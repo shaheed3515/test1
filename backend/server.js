@@ -28,15 +28,19 @@ app.post('/api/chat', async (req, res) => {
             return res.status(400).json({ error: 'Prompt is required' });
         }
 
+        if (!process.env.GEMINI_API_KEY) {
+            return res.status(500).json({ error: 'GEMINI_API_KEY is missing from server environment variables.' });
+        }
+
         const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
+            model: 'gemini-3.6-flash',
             contents: prompt,
         });
 
         res.json({ reply: response.text });
     } catch (error) {
         console.error('API Error:', error);
-        res.status(500).json({ error: 'Failed to generate response' });
+        res.status(500).json({ error: error.message || 'Failed to generate response' });
     }
 });
 
