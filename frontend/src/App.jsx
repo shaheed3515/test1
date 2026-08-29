@@ -1,6 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import 'katex/dist/katex.min.css';
 import { 
   Bot, 
   User, 
@@ -460,7 +463,8 @@ export default function App() {
                     {!isUser ? (
                       <div className="prose prose-invert prose-sm max-w-none space-y-2.5 leading-relaxed break-words">
                         <ReactMarkdown
-                          remarkPlugins={[remarkGfm]}
+                          remarkPlugins={[remarkGfm, remarkMath]}
+                          rehypePlugins={[rehypeKatex]}
                           components={{
                             pre: ({ node, ...props }) => (
                               <pre className="bg-slate-950 border border-slate-800/80 p-3.5 rounded-xl overflow-x-auto text-xs my-2 font-mono" {...props} />
