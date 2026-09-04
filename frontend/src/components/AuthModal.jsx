@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { X, Mail, Lock, AlertCircle, Loader2, Sparkles, CheckCircle2 } from 'lucide-react';
+import { X, Mail, Lock, AlertCircle, Loader2, Sparkles, CheckCircle2, GraduationCap } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
-export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
+export default function AuthModal({ isOpen, onClose, onAuthSuccess, theme = 'light' }) {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -47,9 +47,9 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
         if (data.session) {
           setSuccessMsg('Account created successfully!');
           onAuthSuccess(data.user);
-          setTimeout(() => onClose(), 1000);
+          setTimeout(() => onClose(), 800);
         } else {
-          setSuccessMsg('Sign up successful! Please check your email for confirmation.');
+          setSuccessMsg('Sign up successful! Please check your email to confirm.');
         }
       } else {
         const { data, error } = await supabase.auth.signInWithPassword({
@@ -59,7 +59,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
         if (error) throw error;
         setSuccessMsg('Welcome back!');
         onAuthSuccess(data.user);
-        setTimeout(() => onClose(), 800);
+        setTimeout(() => onClose(), 600);
       }
     } catch (err) {
       setErrorMsg(err.message || 'Authentication failed. Please try again.');
@@ -68,48 +68,59 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn">
-      <div className="relative w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-6 overflow-hidden">
-        
-        {/* Decorative background glow */}
-        <div className="absolute -top-20 -right-20 w-40 h-40 bg-sky-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+  const isDark = theme === 'dark';
+  const isSepia = theme === 'sepia';
 
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-fade-in">
+      <div 
+        onClick={(e) => e.stopPropagation()} 
+        className={`relative w-full max-w-md rounded-2xl p-6 md:p-8 shadow-2xl border transition-all ${
+          isDark 
+            ? 'bg-[#212121] border-[#333] text-gray-100' 
+            : isSepia
+              ? 'bg-[#fbf7ee] border-[#dfd4c3] text-[#2c2722]'
+              : 'bg-white border-gray-100 text-gray-900 shadow-xl'
+        }`}
+      >
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-1.5 text-slate-400 hover:text-white bg-slate-800/50 hover:bg-slate-800 rounded-lg transition-colors"
+          className={`absolute top-4 right-4 p-1.5 rounded-lg transition-colors cursor-pointer ${
+            isDark 
+              ? 'text-gray-400 hover:text-white hover:bg-[#333]' 
+              : 'text-gray-400 hover:text-gray-900 hover:bg-gray-100'
+          }`}
         >
           <X className="w-4 h-4" />
         </button>
 
-        {/* Header */}
+        {/* Brand Header */}
         <div className="flex items-center gap-3 mb-6">
-          <div className="p-2.5 bg-gradient-to-tr from-sky-500 to-indigo-500 text-white rounded-xl shadow-lg shadow-sky-500/20">
-            <Sparkles className="w-5 h-5" />
+          <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-md shadow-emerald-600/20">
+            <GraduationCap className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-white tracking-tight">
-              {isSignUp ? 'Create your Account' : 'Welcome Back'}
+            <h2 className="text-lg font-bold tracking-tight">
+              {isSignUp ? 'Create your Student Account' : 'Welcome to StudyGPT'}
             </h2>
-            <p className="text-xs text-slate-400">
-              {isSignUp ? 'Sync your study sessions and documents' : 'Access your chat history and study notes'}
+            <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+              {isSignUp ? 'Sync lecture notes and study history across devices' : 'Sign in to access your study library'}
             </p>
           </div>
         </div>
 
-        {/* Error / Success Notifications */}
+        {/* Notifications */}
         {errorMsg && (
-          <div className="mb-4 p-3 bg-rose-500/10 border border-rose-500/20 rounded-xl text-rose-300 text-xs flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+          <div className="mb-4 p-3 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl text-xs flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
             <span>{errorMsg}</span>
           </div>
         )}
 
         {successMsg && (
-          <div className="mb-4 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-300 text-xs flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
+          <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
             <span>{successMsg}</span>
           </div>
         )}
@@ -117,24 +128,32 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1.5">Email Address</label>
+            <label className={`block text-xs font-semibold mb-1.5 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+              Email Address
+            </label>
             <div className="relative">
-              <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <Mail className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="student@university.edu"
                 required
-                className="w-full bg-slate-950/80 border border-slate-800 focus:border-sky-500 focus:outline-none rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-500 transition-colors"
+                className={`w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border focus:outline-none transition-all ${
+                  isDark
+                    ? 'bg-[#171717] border-[#383838] text-white placeholder-gray-500 focus:border-emerald-500'
+                    : 'bg-gray-50/70 border-gray-200 text-gray-900 placeholder-gray-400 focus:border-emerald-600 focus:bg-white focus:ring-2 focus:ring-emerald-500/10'
+                }`}
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1.5">Password</label>
+            <label className={`block text-xs font-semibold mb-1.5 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+              Password
+            </label>
             <div className="relative">
-              <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <Lock className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="password"
                 value={password}
@@ -142,7 +161,11 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
                 placeholder="••••••••"
                 required
                 minLength={6}
-                className="w-full bg-slate-950/80 border border-slate-800 focus:border-sky-500 focus:outline-none rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-500 transition-colors"
+                className={`w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border focus:outline-none transition-all ${
+                  isDark
+                    ? 'bg-[#171717] border-[#383838] text-white placeholder-gray-500 focus:border-emerald-500'
+                    : 'bg-gray-50/70 border-gray-200 text-gray-900 placeholder-gray-400 focus:border-emerald-600 focus:bg-white focus:ring-2 focus:ring-emerald-500/10'
+                }`}
               />
             </div>
           </div>
@@ -150,40 +173,39 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
           <button
             type="submit"
             disabled={loading}
-            className="w-full mt-2 bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-medium py-2.5 rounded-xl text-sm transition-all shadow-lg shadow-sky-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full mt-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 rounded-xl text-sm transition-all shadow-md shadow-emerald-600/15 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
           >
             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-            <span>{isSignUp ? 'Create Account' : 'Sign In'}</span>
+            <span>{isSignUp ? 'Create Student Account' : 'Sign In'}</span>
           </button>
         </form>
 
         {/* Footer switch */}
-        <div className="mt-6 text-center text-xs text-slate-400">
+        <div className={`mt-6 text-center text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
           {isSignUp ? (
             <p>
               Already have an account?{' '}
               <button
                 type="button"
                 onClick={() => { setIsSignUp(false); setErrorMsg(''); setSuccessMsg(''); }}
-                className="text-sky-400 hover:underline font-medium ml-1 cursor-pointer"
+                className="text-emerald-600 font-semibold hover:underline ml-1 cursor-pointer"
               >
                 Sign In
               </button>
             </p>
           ) : (
             <p>
-              Don't have an account?{' '}
+              New student?{' '}
               <button
                 type="button"
                 onClick={() => { setIsSignUp(true); setErrorMsg(''); setSuccessMsg(''); }}
-                className="text-sky-400 hover:underline font-medium ml-1 cursor-pointer"
+                className="text-emerald-600 font-semibold hover:underline ml-1 cursor-pointer"
               >
-                Sign Up free
+                Sign up free
               </button>
             </p>
           )}
         </div>
-
       </div>
     </div>
   );
